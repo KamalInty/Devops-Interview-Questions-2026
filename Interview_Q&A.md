@@ -455,12 +455,19 @@ In Microsoft Azure, a Resource Group is a **container that holds related cloud r
 
 **Answer:**
 
-1 Code pushed to repository
-2 Pipeline is triggered
-3 Build starts
-4 Tests run
-5 Artifact is created
-6 Deployment to environment
+1) Code pushed to repository
+
+2) GitHub Actions workflow triggered
+
+3) Build application
+
+4) Run tests
+
+5) Build Docker image (artifact)
+
+6) Push Docker image to container registry
+
+7) Deploy to Kubernetes cluster
 
 ---
 
