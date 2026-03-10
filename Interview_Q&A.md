@@ -977,7 +977,214 @@ Benefits:
 * Zero downtime
 * Easy rollback
 
+**Blue-Green Deployment** is a **deployment strategy in DevOps** used to release a new version of an application **without downtime and with easy rollback**.
+
+It works by maintaining **two identical environments**:
+
+* **Blue Environment** → Current production version (live users are using it)
+* **Green Environment** → New version of the application
+
+Only **one environment serves users at a time**.
+
 ---
+
+## 1️⃣ Basic Idea
+
+Imagine you have two environments:
+
+| Environment | Version          | Status       |
+| ----------- | ---------------- | ------------ |
+| Blue        | v1 (old version) | Live         |
+| Green       | v2 (new version) | Not live yet |
+
+Users are currently using **Blue (v1)**.
+
+You deploy the **new version (v2)** to **Green** and test it.
+
+Once everything works correctly, you **switch traffic from Blue → Green**.
+
+---
+
+## 2️⃣ Step-by-Step Flow
+
+### Step 1 — Blue is Live
+
+Users access the application running in **Blue environment**.
+
+```
+Users → Load Balancer → Blue (v1)
+```
+
+---
+
+### Step 2 — Deploy New Version to Green
+
+Deploy **v2** to the **Green environment**.
+
+```
+Users → Load Balancer → Blue (v1)
+
+Green (v2) ← deployed and tested
+```
+
+Testing can include:
+
+* Smoke tests
+* Integration tests
+* Performance tests
+
+---
+
+### Step 3 — Switch Traffic
+
+Change routing (usually via **Load Balancer / Kubernetes Service**) so users go to **Green**.
+
+```
+Users → Load Balancer → Green (v2)
+```
+
+Now **Green becomes production**.
+
+---
+
+### Step 4 — Keep Blue as Backup
+
+Blue is still available for **instant rollback**.
+
+If a problem occurs:
+
+```
+Users → Load Balancer → Blue (v1)
+```
+
+Rollback is **very fast** because the old version is still running.
+
+---
+
+## 3️⃣ Visual Architecture
+
+```
+                +----------------+
+Users --------->| Load Balancer  |
+                +--------+-------+
+                         |
+             -----------------------------
+             |                           |
+      Blue Environment             Green Environment
+        (Version v1)                 (Version v2)
+        OLD PROD                      NEW RELEASE
+```
+
+After switching:
+
+```
+                +----------------+
+Users --------->| Load Balancer  |
+                +--------+-------+
+                         |
+                         |
+                 Green Environment
+                    (Version v2)
+```
+
+---
+
+## 4️⃣ Real Example (Kubernetes)
+
+Suppose you have:
+
+**Version 1**
+
+```
+app-blue
+```
+
+**Version 2**
+
+```
+app-green
+```
+
+Kubernetes **Service** initially points to:
+
+```
+selector: app=blue
+```
+
+After deployment:
+
+```
+selector: app=green
+```
+
+Traffic switches instantly.
+
+---
+
+## 5️⃣ Advantages
+
+✅ **Zero downtime deployment**
+✅ **Instant rollback**
+✅ **Safe production releases**
+✅ **Easy testing in production-like environment**
+
+---
+
+## 6️⃣ Disadvantages
+
+❌ Requires **double infrastructure** (costly)
+❌ Database schema changes must be handled carefully
+❌ Environment synchronization is required
+
+---
+
+## 7️⃣ Blue-Green vs Other Deployment Strategies
+
+| Strategy           | Description                                |
+| ------------------ | ------------------------------------------ |
+| Blue-Green         | Two environments, switch traffic instantly |
+| Canary             | Release to small % of users first          |
+| Rolling Deployment | Gradually replace old pods                 |
+| Recreate           | Stop old version then start new version    |
+
+---
+
+## 8️⃣ Where It Is Used
+
+Common in:
+
+* **Kubernetes deployments**
+* **Cloud platforms**
+* **CI/CD pipelines**
+* **Microservices architectures**
+
+Tools often used with it:
+
+* **Load balancers**
+* **Kubernetes Services**
+* **NGINX / Istio**
+* **Cloud traffic managers**
+
+---
+
+💡 **Interview Tip (Important):**
+
+If asked in a DevOps interview:
+
+> **Blue-Green deployment is a release strategy where two identical environments (Blue and Green) are maintained. One serves production traffic while the other hosts the new version. After testing, traffic is switched to the new environment, enabling zero downtime and quick rollback.**
+
+---
+
+If you want, I can also explain:
+
+1️⃣ **Blue-Green Deployment in Kubernetes with YAML example**
+2️⃣ **Blue-Green Deployment in GitHub Actions CI/CD pipeline**
+3️⃣ **Difference between Blue-Green vs Canary vs Rolling Deployment (interview focused)**
+
+
+
+
+================================================================================================
 
 # 4. What is Canary deployment?
 
@@ -991,7 +1198,20 @@ Example:
 
 If everything works well, traffic gradually shifts to the new version.
 
----
+
+| Feature             | Blue-Green                 | Canary                   | Rolling                      |
+| ------------------- | -------------------------- | ------------------------ | ---------------------------- |
+| Environments        | Two identical environments | Same environment         | Same environment             |
+| Deployment style    | Switch traffic instantly   | Gradual traffic increase | Replace instances gradually  |
+| Downtime            | No downtime                | No downtime              | No downtime                  |
+| Rollback            | Very fast                  | Moderate                 | Slower                       |
+| Infrastructure cost | High (double environment)  | Medium                   | Low                          |
+| Risk level          | Medium                     | Lowest                   | Medium                       |
+| Monitoring needed   | Low                        | High                     | Medium                       |
+| User exposure       | All users at once          | Small % first            | Gradual instance replacement |
+
+
+===========================================================================================
 
 # 5. What is a Docker registry?
 
