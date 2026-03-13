@@ -924,10 +924,221 @@ docker login
 docker push username/app:version
 ```
 
+===============================================================================================================================================================
+
+Both **Multi-Stage Build** and **Docker Layer Caching** are concepts in **Docker** used to **optimize Docker image builds**, but they solve **different problems**.
+
 ---
 
+# 1️⃣ Multi-Stage Build
 
+## What it is
 
+A **Multi-Stage Build** allows you to use **multiple build stages in a single Dockerfile** and copy only the **required artifacts** into the final image.
+
+This helps create **smaller and more secure production images**.
+
+---
+
+## Example
+
+```dockerfile
+# Build Stage
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
+WORKDIR /build
+COPY . .
+RUN mvn clean package
+
+# Runtime Stage
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+COPY --from=builder /build/target/app.jar app.jar
+CMD ["java","-jar","app.jar"]
+```
+
+### What happens
+
+Stage 1:
+
+```text
+Maven Image
+Compile Code
+Create JAR
+```
+
+Stage 2:
+
+```text
+Lightweight Java Image
+Copy only JAR
+Run Application
+```
+
+Result:
+
+```text
+Final Image = Only Runtime + JAR
+```
+
+No build tools like **Maven** are included.
+
+---
+
+## Benefits
+
+✔ Smaller image size
+✔ Better security
+✔ No build dependencies in production
+✔ Cleaner Dockerfile
+
+Example:
+
+```text
+Normal Image Size: 1.2 GB
+Multi-Stage Image: 250 MB
+```
+
+---
+
+# 2️⃣ Docker Layer Caching
+
+Docker builds images **layer by layer**.
+
+Each instruction creates a **layer**.
+
+Example Dockerfile:
+
+```dockerfile
+FROM node:18
+WORKDIR /app
+COPY package.json .
+RUN npm install
+COPY . .
+CMD ["node","app.js"]
+```
+
+Each instruction creates a **cached layer**.
+
+---
+
+## How Caching Works
+
+First build:
+
+```text
+1 FROM node:18        → Layer 1
+2 WORKDIR /app        → Layer 2
+3 COPY package.json   → Layer 3
+4 RUN npm install     → Layer 4
+5 COPY . .            → Layer 5
+```
+
+Docker stores these layers.
+
+Second build (only code changed):
+
+```text
+1 FROM node:18        → cached
+2 WORKDIR /app        → cached
+3 COPY package.json   → cached
+4 RUN npm install     → cached
+5 COPY . .            → rebuild
+```
+
+So build becomes **much faster**.
+
+---
+
+## Benefit
+
+✔ Faster builds
+✔ Less network usage
+✔ Efficient CI/CD pipelines
+
+This is heavily used in CI pipelines like **GitHub Actions** or **Jenkins**.
+
+---
+
+# 3️⃣ Key Difference
+
+| Feature      | Multi-Stage Build        | Layer Caching         |
+| ------------ | ------------------------ | --------------------- |
+| Purpose      | Reduce image size        | Speed up build        |
+| Works During | Image creation           | Image rebuild         |
+| Technique    | Multiple `FROM` stages   | Reuse previous layers |
+| Benefit      | Smaller production image | Faster builds         |
+| Used For     | Production optimization  | CI/CD performance     |
+
+---
+
+# 4️⃣ Simple Analogy
+
+### Multi-Stage Build
+
+Cooking process:
+
+```text
+Kitchen → Cook Food → Serve Plate
+```
+
+You **don’t serve the whole kitchen**, only the food.
+
+---
+
+### Layer Caching
+
+Cooking again tomorrow:
+
+```text
+Reuse chopped vegetables
+Reuse prepared sauce
+Only cook final dish again
+```
+
+So preparation becomes faster.
+
+---
+
+# 5️⃣ Best Practice (Used in Production)
+
+Most real projects combine both:
+
+```text
+Multi-Stage Build → small image
+Layer Caching → fast build
+```
+
+Example CI/CD flow:
+
+```text
+Developer Push Code
+        │
+        ▼
+GitHub Actions
+        │
+Docker Layer Caching
+        │
+Multi-Stage Docker Build
+        │
+Push Image to Registry
+```
+
+---
+
+✅ **In one sentence**
+
+* **Multi-Stage Build** → reduces **image size**
+* **Docker Layer Caching** → reduces **build time**
+
+---
+
+If you're preparing for **DevOps interviews**, a **very famous Docker interview question** is:
+
+**“Why should `COPY package.json` come before `COPY . .` in a Dockerfile?”**
+
+This question is directly related to **Docker layer caching**, and many people answer it incorrectly. I can explain it if you'd like.
+
+=================================================================================================================================================
 
 ---
 
