@@ -1,1 +1,54 @@
-What happens internally when a Spring Boot application starts?
+1_ What happens internally when a Spring Boot application starts?
+
+A) Spring Boot starts by initializing SpringApplication, then builds the environment by loading all configurations. 
+It creates the ApplicationContext, performs auto-configuration based on dependencies, scans and registers beans, initializes them with dependency injection, 
+starts the embedded server, refreshes the context, and finally signals that the application is ready.
+
+==================================================================================================
+2) Explain Auto Configuration. How does @EnableAutoConfiguration work internally?
+
+    Spring Boot Auto-Configuration in Spring Boot is a feature that automatically configures application components based on the dependencies available in the classpath.
+
+It automatically creates and configures required beans, services, and settings for the application.
+It reduces manual configuration and speeds up development.
+Why Auto-Configuration is Important
+Before Spring Boot, developers had to manually configure many components in Spring applications.
+
+Example tasks developers had to configure manually:
+Configure DispatcherServlet
+Configure view resolvers
+Configure database connection
+Configure transaction management
+Configure embedded server
+
+
+Spring Boot solves this problem using Auto-Configuration.
+
+How Auto-Configuration Works
+Auto-configuration works using the @EnableAutoConfiguration annotation. This annotation tells Spring Boot to automatically configure beans based on:
+
+Dependencies in the classpath
+Application properties
+Existing beans in the application context
+
+In most applications, developers use @SpringBootApplication, which internally includes:
+
+@Configuration
+@EnableAutoConfiguration
+@ComponentScan
+
+@SpringBootApplication
+public class DemoApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+
+}
+
+===================================================================================================
+
+
+3) 
+
+
